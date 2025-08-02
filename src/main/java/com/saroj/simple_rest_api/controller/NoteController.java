@@ -2,11 +2,10 @@ package com.saroj.simple_rest_api.controller;
 
 import com.saroj.simple_rest_api.Dto.RequestNoteDto;
 import com.saroj.simple_rest_api.Dto.ResponseNoteDto;
-import com.saroj.simple_rest_api.entity.Note;
 import com.saroj.simple_rest_api.service.NoteService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,13 +28,13 @@ public class NoteController {
     }
 
     @PostMapping
-    public ResponseEntity<ResponseNoteDto> create(@RequestBody RequestNoteDto noteDto){
+    public ResponseEntity<ResponseNoteDto> create(@Valid @RequestBody RequestNoteDto noteDto){
         ResponseNoteDto note = noteService.create(noteDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(note);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseNoteDto> update(@PathVariable Long id, @RequestBody RequestNoteDto noteDto){
+    public ResponseEntity<ResponseNoteDto> update(@PathVariable Long id, @Valid @RequestBody RequestNoteDto noteDto){
         return ResponseEntity.ok(noteService.update(id, noteDto));
     }
 
