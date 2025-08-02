@@ -1,6 +1,9 @@
 package com.saroj.simple_rest_api.service;
 
+import com.saroj.simple_rest_api.Dto.RequestNoteDto;
+import com.saroj.simple_rest_api.Dto.ResponseNoteDto;
 import com.saroj.simple_rest_api.entity.Note;
+import com.saroj.simple_rest_api.mapper.NoteMapper;
 import com.saroj.simple_rest_api.repository.NoteRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -12,34 +15,41 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NoteServiceImpl implements NoteService{
     private final NoteRepository noteRepository;
+    private final NoteMapper noteMapper;
 
     @Override
-    public List<Note> get() {
-        return noteRepository.findAll();
+    public List<ResponseNoteDto> get() {
+        return noteRepository.findAll().stream()
+                .map(noteMapper::toDTO)
+                .toList();
     }
 
     @Override
-    public Note getById(Long id) {
-        return noteRepository.findById(id)
+    public ResponseNoteDto getById(Long id) {
+        Note note =  noteRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Note not found with id: " + id));
+        return noteMapper.toDTO(note);
     }
 
     @Override
-    public Note create(Note note) {
-        return noteRepository.save(note);
+    public ResponseNoteDto create(RequestNoteDto noteDto) {
+        Note note = noteMapper.toEntity(noteDto);
+        return noteMapper.toDTO(noteRepository.save(note));
     }
 
     @Override
-    public Note update(Long id, Note note) {
-        Note existingNote = getById(id);
-        existingNote.setTitle(note.getTitle());
-        existingNote.setContent(note.getContent());
-        return noteRepository.save(existingNote);
+    public ResponseNoteDto update(Long id, RequestNoteDto noteDto) {
+        Note existingNote = noteRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Note not found"));
+        existingNote.setTitle(noteDto.getTitle());
+        existingNote.setContent(noteDto.getContent());
+        return noteMapper.toDTO(noteRepository.save(existingNote));
     }
 
     @Override
     public void delete(Long id) {
-        Note existingNote = getById(id);
+        Note existingNote = noteRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Note not found"));
         noteRepository.delete(existingNote);
     }
 }
